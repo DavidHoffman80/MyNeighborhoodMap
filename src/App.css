@@ -39,3 +39,12 @@
   border-right: 5px solid #85FFC7;
   overflow: auto;
 }
+
+.nav {
+  height: 100%;
+}
+
+/* INFOWINDOW */
+.info-window {
+  width: 200px;
+}

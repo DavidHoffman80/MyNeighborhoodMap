@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import Map from './Map';
+import SideNav from './SideNav';
 import './App.css';
 
 export class App extends Component {
@@ -44,21 +45,26 @@ export class App extends Component {
   componentDidMount() {
     // to-do: loop over the state.placesOfInterest and call the function
     // below for each iteration and set markers and center.
-    for(let i = 0; i < this.state.placesOfInterest.length ; i++) {
+    for(let i = 0; i < this.state.placesOfInterest.length; i++) {
       let test = this.buildAPIQuery(this.state.placesOfInterest[i].name);
       axios.get(test)
         .then(response => {
           const data = response.data;
           const center = data.response.geocode.feature.geometry;
           const markers = {
+            name: this.state.placesOfInterest[i].name,
+            description: this.state.placesOfInterest[i].description,
             lat: data.response.venues[0].location.lat,
             lng: data.response.venues[0].location.lng,
+            id: data.response.venues[0].id,
             isInfoWindowOpen: false,
             markerVisability: true
           };
           this.setState((prevState) => {
-            prevState.center.push(center);
-            prevState.markers.push(markers);
+            center: prevState.center.push(center);
+          });
+          this.setState((prevState) => {
+            markers: prevState.markers.push(markers);
           });
         })
         .catch(error => console.log(error));
@@ -84,24 +90,24 @@ export class App extends Component {
   markerClicked = (marker) => {
     // lets close all of the markers first
     this.closeAllInfoWindows();
-    marker.isInfoWindowOpen = true;
-    this.setState((prevState) => {
-      markers: this.filterMarkers(prevState, marker).push(marker)
-    }, console.log(this.state));
-    
-    // marker.isInfoWindowOpen = true;
-    // this.setState({ markers: Object.assign(this.state.markers, marker) });
+    axios.get(`https://api.foursquare.com/v2/venues/${marker.id}/photos?client_id=YPAJHYCJSXBAHLEHXCY15QRWRWIAEULQCHSEWKQXPUJEH4B3&client_secret=DZMNN15ZJZBRRSC3WBHARPYRPAHKSJHU4MEJTJOLLB142S44&v=20181007`)
+      .then(response => {
+        marker.isInfoWindowOpen = true;
+        marker.prefix = response.data.response.photos.items[0].prefix;
+        marker.suffix = response.data.response.photos.items[0].suffix;
+        this.setState({markers: Object.assign(this.state.markers, marker)});
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 
   closeAllInfoWindows = () => {
-    this.setState((prevState) => {
-      markers: prevState.markers.map(marker => marker.isInfoWindowOpen = false);
+    let markers = this.state.markers.map(marker => {
+      marker.isInfoWindowOpen = false;
+      return marker;
     });
-  }
-
-  filterMarkers = (prevState, marker) => {
-    let filteredResults = prevState.markers.filter(mark => mark.lat !== marker.lat);
-    return filteredResults;
+    this.setState({markers: Object.assign(this.state.markers, markers)});
   }
 
   render() {
@@ -110,7 +116,11 @@ export class App extends Component {
         <header className="App-header">
           <h1>My Neighborhood Map</h1>
         </header>
-        <nav className='list-nav'></nav>
+        <nav className='list-nav'>
+          <SideNav
+            {...this.state}
+          />
+        </nav>
         <Map 
           {...this.state}
           markerClicked={this.markerClicked}

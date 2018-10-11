@@ -15,7 +15,11 @@ const MyMapComponent = withScriptjs(withGoogleMap((props) =>
       >
         {marker.isInfoWindowOpen && (
           <InfoWindow>
-            <p>You clicked on an InfoWindow!</p>
+            <div className='info-window'>
+              <h4>{marker.name}</h4>
+              <p>{marker.description}</p>
+              <img src={`${marker.prefix}200x200${marker.suffix}`} alt={marker.name}></img>
+            </div>
           </InfoWindow>
         )}
       </Marker>
