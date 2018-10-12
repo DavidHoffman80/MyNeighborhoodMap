@@ -6,40 +6,43 @@ import './App.css';
 
 export class App extends Component {
 
-  state = {
-    placesOfInterest: [
-      {
-        name: 'CCP',
-        description: 'The main office of CCP games in Reykjavik, Iceland.'
-      },
-      {
-        name: 'Hallgrimskirkja',
-        description: 'A beautiful modern cathedral in Reykjavik, Iceland.'
-      },
-      {
-        name: 'Harpa',
-        description: 'The Epal Harpa music hall and conference center is home to the national opera and symphony.'
-      },
-      {
-        name: 'Sólfarið',
-        description: 'An amazing steel sculpture of a viking ship with a beautiful mountain backdrop.'
-      },
-      {
-        name: 'Árbæjarsafn',
-        description: 'An open air museum that consists of 20 old buildings to form a town square.'
-      },
-      {
-        name: 'Tjörnin',
-        description: '"The Pond" in front of City Hall is a great place to take a beautiful strole.'
-      },
-      {
-        name: 'Grótta',
-        description: 'A lighthouse located on the island of Grótta.'
-      }
-    ],
-    markers: [],
-    center: [],
-    zoom: 12
+  constructor(props) {
+    super(props);
+    this.state = {
+      placesOfInterest: [
+        {
+          name: 'CCP',
+          description: 'The main office of CCP games in Reykjavik, Iceland.'
+        },
+        {
+          name: 'Hallgrimskirkja',
+          description: 'A beautiful modern cathedral in Reykjavik, Iceland.'
+        },
+        {
+          name: 'Harpa',
+          description: 'The Epal Harpa music hall and conference center is home to the national opera and symphony.'
+        },
+        {
+          name: 'Sólfarið',
+          description: 'An amazing steel sculpture of a viking ship with a beautiful mountain backdrop.'
+        },
+        {
+          name: 'Árbæjarsafn',
+          description: 'An open air museum that consists of 20 old buildings to form a town square.'
+        },
+        {
+          name: 'Tjörnin',
+          description: '"The Pond" in front of City Hall is a great place to take a beautiful strole.'
+        },
+        {
+          name: 'Grótta',
+          description: 'A lighthouse located on the island of Grótta.'
+        }
+      ],
+      markers: [],
+      center: [],
+      zoom: 12
+    }
   }
 
   componentDidMount() {
@@ -57,15 +60,13 @@ export class App extends Component {
             lat: data.response.venues[0].location.lat,
             lng: data.response.venues[0].location.lng,
             id: data.response.venues[0].id,
-            isInfoWindowOpen: false,
-            markerVisability: true
+            markerVisability: true,
+            listVisability: true
           };
           this.setState((prevState) => {
-            center: prevState.center.push(center);
-          });
-          this.setState((prevState) => {
-            markers: prevState.markers.push(markers);
-          });
+            markers: prevState.markers.push(markers)
+            center: prevState.center.push(center)
+          }, this.closeAllInfoWindows);
         })
         .catch(error => console.log(error));
     }
@@ -118,7 +119,7 @@ export class App extends Component {
         </header>
         <nav className='list-nav'>
           <SideNav
-            {...this.state}
+            markers={this.state.markers}
           />
         </nav>
         <Map 
