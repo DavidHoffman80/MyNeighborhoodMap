@@ -40,8 +40,19 @@
   overflow: auto;
 }
 
-.nav {
-  height: 100%;
+.nav-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li {
+  border-bottom: 2px solid #85FFC7;
+  padding: 1rem 0 1rem 1rem;
+}
+
+.nav-list li:hover {
+  cursor: pointer;
 }
 
 /* INFOWINDOW */

@@ -63,10 +63,10 @@ export class App extends Component {
             markerVisability: true,
             listVisability: true
           };
-          this.setState((prevState) => {
-            markers: prevState.markers.push(markers)
-            center: prevState.center.push(center)
-          }, this.closeAllInfoWindows);
+          this.setState((prevState) => ({
+            markers: prevState.markers.concat([markers]),
+            center: prevState.center.concat([center])
+          }), () => console.log(this.state));
         })
         .catch(error => console.log(error));
     }
@@ -91,16 +91,29 @@ export class App extends Component {
   markerClicked = (marker) => {
     // lets close all of the markers first
     this.closeAllInfoWindows();
-    axios.get(`https://api.foursquare.com/v2/venues/${marker.id}/photos?client_id=YPAJHYCJSXBAHLEHXCY15QRWRWIAEULQCHSEWKQXPUJEH4B3&client_secret=DZMNN15ZJZBRRSC3WBHARPYRPAHKSJHU4MEJTJOLLB142S44&v=20181007`)
+    if(!marker.prefix && !marker.suffix) {
+      console.log('Accessing foursquare');
+      axios.get(`https://api.foursquare.com/v2/venues/${marker.id}/photos?client_id=YPAJHYCJSXBAHLEHXCY15QRWRWIAEULQCHSEWKQXPUJEH4B3&client_secret=DZMNN15ZJZBRRSC3WBHARPYRPAHKSJHU4MEJTJOLLB142S44&v=20181007`)
       .then(response => {
         marker.isInfoWindowOpen = true;
         marker.prefix = response.data.response.photos.items[0].prefix;
         marker.suffix = response.data.response.photos.items[0].suffix;
         this.setState({markers: Object.assign(this.state.markers, marker)});
+        // this.setState((prevState) => ({
+        //   markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker])
+        // }));
       })
       .catch(error => {
         console.log(error);
       });
+    } else {
+      console.log('Using state data');
+      marker.isInfoWindowOpen = true;
+      this.setState({markers: Object.assign(this.state.markers, marker)});
+      // this.setState((prevState) => ({
+      //   markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker])
+      // }));
+    }
   }
 
   closeAllInfoWindows = () => {
@@ -108,6 +121,12 @@ export class App extends Component {
       marker.isInfoWindowOpen = false;
       return marker;
     });
+    // this.setState((prevState) => ({
+    //   markers: prevState.markers.map(marker => {
+    //     marker.isInfoWindowOpen = false;
+    //     return marker;
+    //   })
+    // }));
     this.setState({markers: Object.assign(this.state.markers, markers)});
   }
 
@@ -120,6 +139,7 @@ export class App extends Component {
         <nav className='list-nav'>
           <SideNav
             markers={this.state.markers}
+            changeActiveMarker={this.markerClicked}
           />
         </nav>
         <Map 

@@ -5,9 +5,11 @@ class SideNav extends Component {
     return (
       <div className='nav'>
         <ul className='nav-list'>
-          {this.props.markers.map((marker, index) => {
-            return <li className='list-item' key={index}><h4 className='place-name'>{marker.name}</h4></li>
-          })}
+          {this.props.markers.map((marker, index) => (
+            <li className='list-item' key={index} onClick={() => this.props.changeActiveMarker(marker)}>
+              <h4 className='place-name'>{marker.name}</h4>
+            </li>
+          ))}
         </ul>
       </div>
     )
