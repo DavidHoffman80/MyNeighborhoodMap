@@ -23,19 +23,19 @@ export class App extends Component {
           description: 'The Epal Harpa music hall and conference center is home to the national opera and symphony.'
         },
         {
-          name: 'Sólfarið',
+          name: 'Sun Voyager (Sólfar)',
           description: 'An amazing steel sculpture of a viking ship with a beautiful mountain backdrop.'
         },
         {
-          name: 'Árbæjarsafn',
+          name: 'Arbaejarsafn',
           description: 'An open air museum that consists of 20 old buildings to form a town square.'
         },
         {
-          name: 'Tjörnin',
+          name: 'Tjornin',
           description: '"The Pond" in front of City Hall is a great place to take a beautiful strole.'
         },
         {
-          name: 'Grótta',
+          name: 'Grotta',
           description: 'A lighthouse located on the island of Grótta.'
         }
       ],
@@ -52,6 +52,7 @@ export class App extends Component {
       let test = this.buildAPIQuery(this.state.placesOfInterest[i].name);
       axios.get(test)
         .then(response => {
+          console.log(response);
           const data = response.data;
           const center = data.response.geocode.feature.geometry;
           const markers = {
@@ -66,7 +67,7 @@ export class App extends Component {
           this.setState((prevState) => ({
             markers: prevState.markers.concat([markers]),
             center: prevState.center.concat([center])
-          }), () => console.log(this.state));
+          }));
         })
         .catch(error => console.log(error));
     }

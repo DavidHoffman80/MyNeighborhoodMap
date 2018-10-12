@@ -49,10 +49,24 @@
 .nav-list li {
   border-bottom: 2px solid #85FFC7;
   padding: 1rem 0 1rem 1rem;
+  color: #E6E6E6;
 }
 
 .nav-list li:hover {
   cursor: pointer;
+}
+
+.search-places {
+  width: 100%;
+  padding: 1rem 0 1rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #297373;
+  color: #E6E6E6;
+}
+
+.search-places::placeholder {
+  color: #E6E6E6;
 }
 
 /* INFOWINDOW */
