@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap, Marker, InfoWindow } from "react-google-maps";
+import escapeRegExp from 'escape-string-regexp';
+import sortBy from 'sort-by';
 
 const MyMapComponent = withScriptjs(withGoogleMap((props) =>
   <GoogleMap
@@ -7,7 +9,7 @@ const MyMapComponent = withScriptjs(withGoogleMap((props) =>
     zoom={props.zoom}
     defaultCenter={{ lat: 64.1466, lng: -21.9426 }}
   >
-    {props.markers && props.markers.filter(marker => marker.markerVisability).map((marker, index) => (
+    {props.showPlaces && props.showPlaces.filter(marker => marker.markerVisability).map((marker, index) => (
       <Marker
         key={index}
         position={{ lat: marker.lat, lng: marker.lng }}

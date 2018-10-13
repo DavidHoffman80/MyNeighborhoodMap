@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import escapeRegExp from 'escape-string-regexp';
+import sortBy from 'sort-by';
 import Map from './Map';
 import SideNav from './SideNav';
 import './App.css';
@@ -41,7 +43,9 @@ export class App extends Component {
       ],
       markers: [],
       center: [],
-      zoom: 12
+      zoom: 12,
+      query: '',
+      showPlaces: []
     }
   }
 
@@ -52,7 +56,6 @@ export class App extends Component {
       let test = this.buildAPIQuery(this.state.placesOfInterest[i].name);
       axios.get(test)
         .then(response => {
-          console.log(response);
           const data = response.data;
           const center = data.response.geocode.feature.geometry;
           const markers = {
@@ -66,8 +69,9 @@ export class App extends Component {
           };
           this.setState((prevState) => ({
             markers: prevState.markers.concat([markers]),
-            center: prevState.center.concat([center])
-          }));
+            center: prevState.center.concat([center]),
+            showPlaces: prevState.showPlaces.concat([markers])
+          }), () => console.log('Initial state:', this.state))
         })
         .catch(error => console.log(error));
     }
@@ -93,7 +97,6 @@ export class App extends Component {
     // lets close all of the markers first
     this.closeAllInfoWindows();
     if(!marker.prefix && !marker.suffix) {
-      console.log('Accessing foursquare');
       axios.get(`https://api.foursquare.com/v2/venues/${marker.id}/photos?client_id=YPAJHYCJSXBAHLEHXCY15QRWRWIAEULQCHSEWKQXPUJEH4B3&client_secret=DZMNN15ZJZBRRSC3WBHARPYRPAHKSJHU4MEJTJOLLB142S44&v=20181007`)
       .then(response => {
         marker.isInfoWindowOpen = true;
@@ -108,7 +111,6 @@ export class App extends Component {
         console.log(error);
       });
     } else {
-      console.log('Using state data');
       marker.isInfoWindowOpen = true;
       this.setState({markers: Object.assign(this.state.markers, marker)});
       // this.setState((prevState) => ({
@@ -131,6 +133,21 @@ export class App extends Component {
     this.setState({markers: Object.assign(this.state.markers, markers)});
   }
 
+  updateQuery = (query) => {
+    this.setState({ query: query.trim() }, this.updateShowPlaces);
+  }
+
+  updateShowPlaces = () => {
+    if(this.state.query) {
+      console.log('theres a query');
+      const match = new RegExp(escapeRegExp(this.state.query), 'i');
+      this.setState({showPlaces: this.state.markers.filter((marker) => match.test(marker.name)).sort(sortBy('name'))}, () => console.log(this.state))
+    } else {
+      console.log('theres not a query');
+      this.setState({showPlaces: this.state.markers});
+    }
+  }
+
   render() {
     return (
       <section className="App">
@@ -139,8 +156,10 @@ export class App extends Component {
         </header>
         <nav className='list-nav'>
           <SideNav
-            markers={this.state.markers}
+            markers={this.state.showPlaces}
             changeActiveMarker={this.markerClicked}
+            query={this.state.query}
+            queryChanged={this.updateQuery}
           />
         </nav>
         <Map 
