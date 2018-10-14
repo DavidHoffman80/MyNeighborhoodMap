@@ -25,7 +25,7 @@ export class App extends Component {
           description: 'The Epal Harpa music hall and conference center is home to the national opera and symphony.'
         },
         {
-          name: 'Sun Voyager (Sólfar)',
+          name: 'Solfar',
           description: 'An amazing steel sculpture of a viking ship with a beautiful mountain backdrop.'
         },
         {
@@ -68,12 +68,22 @@ export class App extends Component {
             listVisability: true
           };
           this.setState((prevState) => ({
-            markers: prevState.markers.concat([markers]),
+            markers: prevState.markers.concat([markers]).sort(sortBy('name')),
             center: prevState.center.concat([center]),
-            showPlaces: prevState.showPlaces.concat([markers])
-          }), () => console.log('Initial state:', this.state))
+            showPlaces: prevState.showPlaces.concat([markers]).sort(sortBy('name'))
+          }))
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          const marker = {
+            name: 'Sorry! There was an error loading this place.',
+            error: true,
+            errorDes: error
+          };
+          this.setState((prevState) => ({
+            markers: prevState.markers.concat([marker]).sort(sortBy('name')),
+            showPlaces: prevState.markers.concat([marker]).sort(sortBy('name'))
+          }))
+        });
     }
   }
 
@@ -95,42 +105,46 @@ export class App extends Component {
 
   markerClicked = (marker) => {
     // lets close all of the markers first
-    this.closeAllInfoWindows();
+    this.setState((prevState) => ({
+      markers: prevState.markers.map(marker => {
+        marker.isInfoWindowOpen = false
+        return marker
+      }).sort(sortBy('name')),
+      showPlaces: prevState.showPlaces.map(marker => {
+        marker.isInfoWindowOpen = false
+        return marker
+      }).sort(sortBy('name'))
+    }), () => {this.openInfoWindow(marker)})
+  }
+
+  openInfoWindow = (marker) => {
     if(!marker.prefix && !marker.suffix) {
       axios.get(`https://api.foursquare.com/v2/venues/${marker.id}/photos?client_id=YPAJHYCJSXBAHLEHXCY15QRWRWIAEULQCHSEWKQXPUJEH4B3&client_secret=DZMNN15ZJZBRRSC3WBHARPYRPAHKSJHU4MEJTJOLLB142S44&v=20181007`)
       .then(response => {
         marker.isInfoWindowOpen = true;
         marker.prefix = response.data.response.photos.items[0].prefix;
         marker.suffix = response.data.response.photos.items[0].suffix;
-        this.setState({markers: Object.assign(this.state.markers, marker)});
-        // this.setState((prevState) => ({
-        //   markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker])
-        // }));
+        this.setState((prevState) => ({
+          showPlaces: prevState.showPlaces.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name')),
+          markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name'))
+        }), () => console.log('setState prefix/suffix'));
       })
       .catch(error => {
-        console.log(error);
+        marker.error = true
+        marker.errorDescription = error
+        marker.isInfoWindowOpen = true
+        this.setState((prevState) => ({
+          showPlaces: prevState.showPlaces.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name')),
+          markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name'))
+        }))
       });
     } else {
       marker.isInfoWindowOpen = true;
-      this.setState({markers: Object.assign(this.state.markers, marker)});
-      // this.setState((prevState) => ({
-      //   markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker])
-      // }));
+      this.setState((prevState) => ({
+        showPlaces: prevState.showPlaces.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name')),
+        markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name'))
+      }), () => console.log('using state data'));
     }
-  }
-
-  closeAllInfoWindows = () => {
-    let markers = this.state.markers.map(marker => {
-      marker.isInfoWindowOpen = false;
-      return marker;
-    });
-    // this.setState((prevState) => ({
-    //   markers: prevState.markers.map(marker => {
-    //     marker.isInfoWindowOpen = false;
-    //     return marker;
-    //   })
-    // }));
-    this.setState({markers: Object.assign(this.state.markers, markers)});
   }
 
   updateQuery = (query) => {
@@ -139,12 +153,14 @@ export class App extends Component {
 
   updateShowPlaces = () => {
     if(this.state.query) {
-      console.log('theres a query');
       const match = new RegExp(escapeRegExp(this.state.query), 'i');
-      this.setState({showPlaces: this.state.markers.filter((marker) => match.test(marker.name)).sort(sortBy('name'))}, () => console.log(this.state))
+      this.setState({showPlaces: this.state.markers
+        .filter((marker) => match.test(marker.name))
+        .sort(sortBy('name'))})
     } else {
-      console.log('theres not a query');
-      this.setState({showPlaces: this.state.markers});
+      this.setState((prevState) => ({
+        showPlaces: prevState.markers.sort(sortBy('name'))
+      }))
     }
   }
 

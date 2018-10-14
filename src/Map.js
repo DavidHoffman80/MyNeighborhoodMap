@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap, Marker, InfoWindow } from "react-google-maps";
-import escapeRegExp from 'escape-string-regexp';
-import sortBy from 'sort-by';
 
 const MyMapComponent = withScriptjs(withGoogleMap((props) =>
   <GoogleMap
@@ -17,11 +15,19 @@ const MyMapComponent = withScriptjs(withGoogleMap((props) =>
       >
         {marker.isInfoWindowOpen && (
           <InfoWindow>
-            <div className='info-window'>
-              <h4>{marker.name}</h4>
-              <p>{marker.description}</p>
-              <img src={`${marker.prefix}200x200${marker.suffix}`} alt={marker.name}></img>
-            </div>
+            {!marker.error ? (
+              <div className='info-window'>
+                <h4>{marker.name}</h4>
+                <p>{marker.description}</p>
+                <img src={`${marker.prefix}200x200${marker.suffix}`} alt={marker.name}></img>
+              </div>
+            ) : (
+              <div className='info-window'>
+                <h4>{marker.name}</h4>
+                <p>{marker.description}</p>
+              </div>
+            )}
+              
           </InfoWindow>
         )}
       </Marker>
