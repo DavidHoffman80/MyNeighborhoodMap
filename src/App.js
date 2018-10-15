@@ -42,22 +42,21 @@ export class App extends Component {
         }
       ],
       markers: [],
-      center: [],
       zoom: 12,
       query: '',
       showPlaces: []
     }
   }
 
+  // Once the component mounts
   componentDidMount() {
-    // to-do: loop over the state.placesOfInterest and call the function
-    // below for each iteration and set markers and center.
+    // Loop over placesOfInterest and get data from foursquare
     for(let i = 0; i < this.state.placesOfInterest.length; i++) {
       let test = this.buildAPIQuery(this.state.placesOfInterest[i].name);
       axios.get(test)
         .then(response => {
           const data = response.data;
-          const center = data.response.geocode.feature.geometry;
+          // Set the marker object
           const markers = {
             name: this.state.placesOfInterest[i].name,
             description: this.state.placesOfInterest[i].description,
@@ -67,18 +66,20 @@ export class App extends Component {
             markerVisability: true,
             listVisability: true
           };
+          // Set the state of markers
           this.setState((prevState) => ({
             markers: prevState.markers.concat([markers]).sort(sortBy('name')),
-            center: prevState.center.concat([center]),
             showPlaces: prevState.showPlaces.concat([markers]).sort(sortBy('name'))
           }))
         })
+        // Catch any errors
         .catch(error => {
           const marker = {
             name: 'Sorry! There was an error loading this place.',
             error: true,
             errorDes: error
           };
+          // Set the state
           this.setState((prevState) => ({
             markers: prevState.markers.concat([marker]).sort(sortBy('name')),
             showPlaces: prevState.markers.concat([marker]).sort(sortBy('name'))
@@ -87,6 +88,7 @@ export class App extends Component {
     }
   }
 
+  // This builds API string for foursquare
   buildAPIQuery(queryString) {
     let APIElements = {
       base: 'https://api.foursquare.com/v2/venues/search?',
@@ -103,8 +105,9 @@ export class App extends Component {
     return totalAPI;
   }
 
+  // When the marker is clicked
   markerClicked = (marker) => {
-    // lets close all of the markers first
+    // lets close all of the markers first and set the state
     this.setState((prevState) => ({
       markers: prevState.markers.map(marker => {
         marker.isInfoWindowOpen = false
@@ -114,32 +117,41 @@ export class App extends Component {
         marker.isInfoWindowOpen = false
         return marker
       }).sort(sortBy('name'))
+      // Next lets call the openInfoWindow function
     }), () => {this.openInfoWindow(marker)})
   }
 
+  // This is where we open the infowindow
   openInfoWindow = (marker) => {
+    // if marker.prefix or marker.suffix isn't set then we make a call
+    // to foursquare and get a photo
     if(!marker.prefix && !marker.suffix) {
       axios.get(`https://api.foursquare.com/v2/venues/${marker.id}/photos?client_id=YPAJHYCJSXBAHLEHXCY15QRWRWIAEULQCHSEWKQXPUJEH4B3&client_secret=DZMNN15ZJZBRRSC3WBHARPYRPAHKSJHU4MEJTJOLLB142S44&v=20181007`)
       .then(response => {
         marker.isInfoWindowOpen = true;
         marker.prefix = response.data.response.photos.items[0].prefix;
         marker.suffix = response.data.response.photos.items[0].suffix;
+        // Set the state
         this.setState((prevState) => ({
           showPlaces: prevState.showPlaces.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name')),
           markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name'))
-        }), () => console.log('setState prefix/suffix'));
+        }));
       })
+      // catch any errors
       .catch(error => {
         marker.error = true
         marker.errorDescription = error
         marker.isInfoWindowOpen = true
+        // set the state
         this.setState((prevState) => ({
           showPlaces: prevState.showPlaces.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name')),
           markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name'))
         }))
       });
+    // This means that we already have the photo info so just use the state data
     } else {
       marker.isInfoWindowOpen = true;
+      // Set the state
       this.setState((prevState) => ({
         showPlaces: prevState.showPlaces.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name')),
         markers: prevState.markers.filter((c) => c.id !== marker.id).concat([marker]).sort(sortBy('name'))
@@ -147,16 +159,21 @@ export class App extends Component {
     }
   }
 
+  // When the query is changed this function is called to update the state
+  // and to call the updateShowPlaces function
   updateQuery = (query) => {
     this.setState({ query: query.trim() }, this.updateShowPlaces);
   }
 
+  // This uses regular expresions to mach places against the search query
   updateShowPlaces = () => {
+    // if there is a search query
     if(this.state.query) {
       const match = new RegExp(escapeRegExp(this.state.query), 'i');
       this.setState({showPlaces: this.state.markers
         .filter((marker) => match.test(marker.name))
         .sort(sortBy('name'))})
+    // otherwise there isnt a search query so just show all places
     } else {
       this.setState((prevState) => ({
         showPlaces: prevState.markers.sort(sortBy('name'))
