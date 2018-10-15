@@ -6,6 +6,7 @@ The project ruberic can be found [here](https://review.udacity.com/#!/rubrics/13
 ### Requirements
 * npm
 * yarn
+* serve
 ### How to run the app for development
 * [Clone](https://github.com/DavidHoffman80/MyNeighborhoodMap.git) or [Download](https://github.com/DavidHoffman80/MyNeighborhoodMap.git) the repository.
 * In the terminal, run `npm install` to install all of the dependencies.
