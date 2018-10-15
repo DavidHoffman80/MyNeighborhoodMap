@@ -77,3 +77,28 @@
 .info-window {
   width: 200px;
 }
+
+/* MEDIA QUERIES */
+@media only screen and (max-width: 1099px) {
+  .App {
+    /* height: 100%; */
+    grid-template-columns: 1fr;
+    grid-template-rows: 4rem 1.5fr 1fr;
+  }
+
+  .App-header {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
+
+  .containerElement {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+  }
+
+  .list-nav {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+    border-right: none;
+  }
+}
